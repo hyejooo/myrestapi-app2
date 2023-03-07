@@ -1,6 +1,7 @@
 package com.kt.myrestapi.lectures;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.kt.myrestapi.accounts.Account;
 import lombok.*;
 
 import javax.persistence.*;
@@ -15,6 +16,8 @@ import java.time.LocalDateTime;
 @Entity
 public class Lecture {
 
+    @ManyToOne // 다대일의 연관관계 매핑
+    private Account account;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

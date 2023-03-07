@@ -1,5 +1,6 @@
 package com.kt.myrestapi.lectures;
 
+import com.kt.myrestapi.common.ErrorsResource;
 import com.kt.myrestapi.lectures.dto.LectureReqDto;
 import com.kt.myrestapi.lectures.dto.LectureResDto;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +61,7 @@ public class LectureController {
         return ResponseEntity.created(createUri).body(lectureResource);
     }
 
-    private ResponseEntity badRequest(Errors errors) {
-        return ResponseEntity.badRequest().body(errors);
+    private ResponseEntity<ErrorsResource> badRequest(Errors errors) {
+        return ResponseEntity.badRequest().body(new ErrorsResource(errors));
     }
 }

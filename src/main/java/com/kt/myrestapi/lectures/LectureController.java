@@ -1,6 +1,7 @@
 package com.kt.myrestapi.lectures;
 
 import com.kt.myrestapi.lectures.dto.LectureReqDto;
+import com.kt.myrestapi.lectures.dto.LectureResDto;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.MediaTypes;
@@ -15,6 +16,8 @@ import org.springframework.validation.Errors;
 
 import javax.validation.Valid;
 import java.net.URI;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
 @Controller
@@ -42,11 +45,19 @@ public class LectureController {
 
         // free, offline 값을 갱신
         lecture.update();
+
         Lecture savedLecture = lectureRepository.save(lecture);
-        WebMvcLinkBuilder linkBuilder = WebMvcLinkBuilder.linkTo(LectureController.class) // http://localhost:8080/api/lectures/10
-                .slash(lecture.getId());
+        LectureResDto lectureResDto = modelMapper.map(savedLecture, LectureResDto.class);
+        WebMvcLinkBuilder linkBuilder = linkTo(LectureController.class).slash(lectureResDto.getId()); // http://localhost:8080/api/lectures/10
         URI createUri = linkBuilder.toUri();
-        return ResponseEntity.created(createUri).body(savedLecture);
+
+        // HATEOAS
+        LectureResource lectureResource = new LectureResource(lectureResDto);
+        lectureResource.add(linkTo(LectureController.class).withRel("query-lectures"));
+        lectureResource.add(linkBuilder.withSelfRel());
+        lectureResource.add(linkBuilder.withRel("update-lecture"));
+
+        return ResponseEntity.created(createUri).body(lectureResource);
     }
 
     private ResponseEntity badRequest(Errors errors) {

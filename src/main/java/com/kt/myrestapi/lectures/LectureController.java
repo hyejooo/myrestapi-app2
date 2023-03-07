@@ -54,7 +54,7 @@ public class LectureController {
         // HATEOAS
         LectureResource lectureResource = new LectureResource(lectureResDto);
         lectureResource.add(linkTo(LectureController.class).withRel("query-lectures"));
-        lectureResource.add(linkBuilder.withSelfRel());
+//        lectureResource.add(linkBuilder.withSelfRel());  // self link 삭제 (리소스 생성자에 코드 추가)
         lectureResource.add(linkBuilder.withRel("update-lecture"));
 
         return ResponseEntity.created(createUri).body(lectureResource);

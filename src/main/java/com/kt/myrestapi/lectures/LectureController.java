@@ -5,10 +5,16 @@ import com.kt.myrestapi.lectures.dto.LectureReqDto;
 import com.kt.myrestapi.lectures.dto.LectureResDto;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +35,22 @@ public class LectureController {
     private final LectureRepository lectureRepository;
     private final ModelMapper modelMapper;
     private final LectureValidator lectureValidator;
+
+    @GetMapping
+    public ResponseEntity queryLecture(Pageable pageable,
+                                       PagedResourcesAssembler<LectureResDto> assembler) {
+        Page<Lecture> lecturePage = this.lectureRepository.findAll(pageable);
+        // 1단계: first, prev, next, last 링크
+        Page<LectureResDto> lectureResDtoPage =
+                lecturePage.map(lecture -> modelMapper.map(lecture, LectureResDto.class));
+//        PagedModel<EntityModel<LectureResDto>> pagedResources = assembler.toModel(lectureResDtoPage);
+        // 2단계: first, prev, next, last 링크 + self 링크 포함
+        PagedModel<LectureResource> pagedResources =
+                assembler.toModel(lectureResDtoPage,
+                        lectureResDto -> { return new LectureResource(lectureResDto); });
+        // RepresentationModelAssembler의 추상에서도 R toModel(T entity)
+        return ResponseEntity.ok(pagedResources);
+    }
 
     @PostMapping
     public ResponseEntity createLecture (@RequestBody @Valid LectureReqDto lectureReqDto,
